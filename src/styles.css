@@ -521,31 +521,6 @@ img {
   }
 }
 
-.info-section {
-  padding: 8px 0 62px;
-}
-
-.info-card {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 34px;
-}
-
-.info-card .eyebrow {
-  margin-bottom: 7px;
-}
-
-.info-card h2 {
-  margin: 0 0 9px;
-  font-size: 26px;
-}
-
-.info-card p:last-child {
-  margin: 0;
-  max-width: 850px;
-  color: #75839a;
-}
 
 .footer {
   background: #fff;

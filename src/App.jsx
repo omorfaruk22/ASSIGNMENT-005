@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import Navbar from './components/Navbar/Navbar';
 import Hero from './components/Hero/Hero';
 import Technologies from './components/Technologies/Technologies';
-import InfoSection from './components/InfoSection/InfoSection';
+// import InfoSection from './components/InfoSection/InfoSection';
 import Footer from './components/Footer/Footer';
 
 function App() {
@@ -134,23 +134,7 @@ function App() {
           onRemoveAll={removeAll}
         />
 
-        <InfoSection
-          id="projects"
-          title="Projects"
-          text="Use your chosen technologies to shape a real-world project stack with clear frontend, backend, database, and deployment decisions."
-        />
-
-        <InfoSection
-          id="about"
-          title="About Dev Stack"
-          text="Dev Stack helps new and experienced developers compare technologies quickly and create a stack that matches project needs, team skills, and delivery goals."
-        />
-
-        <InfoSection
-          id="contact"
-          title="Contact"
-          text="Have a stack idea or want to suggest a technology? Reach out through your preferred developer community channel."
-        />
+       
       </main>
 
       <Footer />
