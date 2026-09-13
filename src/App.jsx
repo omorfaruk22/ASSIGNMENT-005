@@ -1,100 +1,161 @@
-import React, { useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React from 'react';
+import { toast } from 'react-toastify';
 
 import Navbar from './components/Navbar/Navbar';
 import Hero from './components/Hero/Hero';
 import Technologies from './components/Technologies/Technologies';
-import StackPanel from './components/StackPanel/StackPanel';
+import InfoSection from './components/InfoSection/InfoSection';
 import Footer from './components/Footer/Footer';
 
-export default function App() {
-  const [technologies, setTechnologies] = useState([]);
-  const [stack, setStack] = useState([]);
-  const [loading, setLoading] = useState(true);
+function App() {
+  const [technologies, setTechnologies] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [stack, setStack] = React.useState([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
+    let cancelled = false;
+
     fetch('/data/technologies.json')
-      .then((res) => res.json())
-      .then((data) => {
-        setTechnologies(data);
-        setLoading(false);
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Could not load technology data.');
+        }
+
+        return response.json();
       })
-      .catch((err) => {
-        console.error('Failed to load JSON data:', err);
-        setLoading(false);
+      .then((data) => {
+        if (!cancelled) {
+          setTechnologies(data);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          toast.error(
+            'Could not load technologies. Please refresh the page.',
+            {
+              toastId: 'technology-load-error'
+            }
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleAddToStack = (tech) => {
-    const exists = stack.some((item) => item.id === tech.id);
-    if (exists) {
-      toast.warning(`${tech.name} is already in your stack!`);
-      return;
-    }
-    setStack((prev) => [...prev, tech]);
-    toast.success(`${tech.name} added to your stack.`);
+  const addToStack = (tech) => {
+    setStack((currentStack) => {
+      const alreadyExists = currentStack.some(
+        (item) => item.id === tech.id
+      );
+
+      if (alreadyExists) {
+        toast.warning(
+          `${tech.name} is already in your stack.`,
+          {
+            toastId: `duplicate-${tech.id}`
+          }
+        );
+
+        return currentStack;
+      }
+
+      toast.success(
+        `${tech.name} added to your stack.`,
+        {
+          toastId: `add-${tech.id}`
+        }
+      );
+
+      return [...currentStack, tech];
+    });
   };
 
-  const handleRemoveFromStack = (id) => {
-    const itemToRemove = stack.find((item) => item.id === id);
-    setStack((prev) => prev.filter((item) => item.id !== id));
-    if (itemToRemove) {
-      toast.info(`${itemToRemove.name} removed from stack.`);
-    }
+  const removeFromStack = (tech) => {
+    setStack((currentStack) => {
+      const updatedStack = currentStack.filter(
+        (item) => item.id !== tech.id
+      );
+
+      toast.info(
+        `${tech.name} removed from your stack.`,
+        {
+          toastId: `remove-${tech.id}`
+        }
+      );
+
+      return updatedStack;
+    });
   };
 
-  const handleClearAll = () => {
-    setStack([]);
-    toast.error('All items cleared from stack.');
+  const removeAll = () => {
+    setStack((currentStack) => {
+      if (currentStack.length === 0) {
+        toast.warning(
+          'Your stack is already empty.',
+          {
+            toastId: 'empty-stack'
+          }
+        );
+
+        return currentStack;
+      }
+
+      toast.info(
+        'All technologies were removed from your stack.',
+        {
+          toastId: 'remove-all'
+        }
+      );
+
+      return [];
+    });
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
+    <>
       <Navbar />
-      <Hero />
 
-      <main id="technologies" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow w-full">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-            <p className="text-xs font-medium">Loading technologies...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-2">
-              <Technologies
-                technologies={technologies}
-                onAdd={handleAddToStack}
-                stack={stack}
-              />
-            </div>
+      <main>
+        <Hero />
 
-            <div className="lg:col-span-1">
-              <StackPanel
-                stack={stack}
-                onRemove={handleRemoveFromStack}
-                onClearAll={handleClearAll}
-              />
-            </div>
-          </div>
-        )}
+        <Technologies
+          technologies={technologies}
+          loading={loading}
+          stack={stack}
+          onAdd={addToStack}
+          onRemove={removeFromStack}
+          onRemoveAll={removeAll}
+        />
+
+        <InfoSection
+          id="projects"
+          title="Projects"
+          text="Use your chosen technologies to shape a real-world project stack with clear frontend, backend, database, and deployment decisions."
+        />
+
+        <InfoSection
+          id="about"
+          title="About Dev Stack"
+          text="Dev Stack helps new and experienced developers compare technologies quickly and create a stack that matches project needs, team skills, and delivery goals."
+        />
+
+        <InfoSection
+          id="contact"
+          title="Contact"
+          text="Have a stack idea or want to suggest a technology? Reach out through your preferred developer community channel."
+        />
       </main>
 
       <Footer />
-
-      <ToastContainer
-        position="top-right"
-        autoClose={2500}
-        hideProgressBar={false}
-        newestOnTop={true}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
-    </div>
+    </>
   );
 }
+
+export default App;
